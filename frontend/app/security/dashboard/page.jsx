@@ -1,4 +1,6 @@
 'use client'
+import { useEffect, useState } from 'react'
+import { getCurrentUser } from '@/lib/auth'
 
 import {
   AlertTriangle,
@@ -18,8 +20,17 @@ import {
   X,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useState } from 'react'
 
+
+import dynamic from 'next/dynamic'
+
+
+const CampusAlertMap = dynamic(
+  () => import('@/components/campus-alert-map'),
+  {
+    ssr: false,
+  }
+)
 const alerts = [
   {
     id: 1,
@@ -80,7 +91,12 @@ function severityClass(severity) {
 export default function SecurityDashboard() {
   const [mobileMenu, setMobileMenu] = useState(false)
   const [alertList, setAlertList] = useState(alerts)
+const [currentUser, setCurrentUser] = useState(null)
 
+useEffect(() => {
+  const user = getCurrentUser()
+  setCurrentUser(user)
+}, [])
   function acknowledgeAlert(id) {
     setAlertList((current) =>
       current.filter((alert) => alert.id !== id)
@@ -167,12 +183,12 @@ export default function SecurityDashboard() {
               </div>
 
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium">
-                  Security Officer
+                <p className="text-sm font-medium">
+                     {currentUser?.name || 'Security Officer'}
                 </p>
 
-                <p className="truncate text-xs text-muted-foreground">
-                  security@nmsight.com
+                <p className="text-xs text-muted-foreground">
+                    {currentUser?.email || 'security@nmsight.com'}
                 </p>
               </div>
             </div>
@@ -276,81 +292,38 @@ export default function SecurityDashboard() {
           <div className="mt-6 grid gap-6 xl:grid-cols-[1.5fr_1fr]">
 
             {/* Campus Map */}
-            <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+            {/* Campus Alert Map */}
+<section className="mt-6 overflow-hidden rounded-2xl border bg-card shadow-sm">
 
-              <div className="flex items-center justify-between border-b p-5">
+  <div className="flex flex-col gap-3 border-b p-5 sm:flex-row sm:items-center sm:justify-between">
 
-                <div>
-                  <h2 className="font-semibold">
-                    Campus Overview
-                  </h2>
+    <div>
+      <h2 className="font-semibold">
+        VIT Vellore Campus
+      </h2>
 
-                  <p className="text-sm text-muted-foreground">
-                    Live camera and zone status
-                  </p>
-                </div>
+      <p className="text-sm text-muted-foreground">
+        Real-time security alerts and incident locations
+      </p>
+    </div>
 
-                <button className="flex items-center gap-1 text-sm font-medium text-primary">
-                  View map
-                  <ChevronRight className="size-4" />
-                </button>
+    <div className="flex items-center gap-2">
 
-              </div>
+      <span className="size-2 rounded-full bg-green-500" />
 
-              {/* Dummy map */}
-              <div className="relative m-5 h-[340px] overflow-hidden rounded-xl bg-muted/70">
+      <span className="text-xs font-medium text-green-600">
+        Monitoring Active
+      </span>
 
-                <div className="absolute inset-8 rounded-3xl border-2 border-dashed border-muted-foreground/20" />
+    </div>
 
-                {/* roads */}
-                <div className="absolute left-1/2 top-0 h-full w-16 -translate-x-1/2 bg-background/60" />
+  </div>
 
-                <div className="absolute left-0 top-1/2 h-16 w-full -translate-y-1/2 bg-background/60" />
+  <div className="p-5">
+    <CampusAlertMap />
+  </div>
 
-                {/* pins */}
-                <CameraPin
-                  label="North Gate"
-                  position="left-[18%] top-[22%]"
-                  alert
-                />
-
-                <CameraPin
-                  label="Library"
-                  position="right-[20%] top-[28%]"
-                />
-
-                <CameraPin
-                  label="Central Lawn"
-                  position="left-[38%] bottom-[20%]"
-                />
-
-                <CameraPin
-                  label="Parking"
-                  position="right-[15%] bottom-[18%]"
-                />
-
-                {/* Legend */}
-                <div className="absolute bottom-4 left-4 rounded-lg border bg-card px-3 py-2 shadow-sm">
-
-                  <div className="flex gap-4 text-xs">
-
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-green-500" />
-                      Normal
-                    </span>
-
-                    <span className="flex items-center gap-1.5">
-                      <span className="size-2 rounded-full bg-red-500" />
-                      Alert
-                    </span>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </section>
+</section>
 
             {/* Alerts */}
             <section className="overflow-hidden rounded-2xl border bg-card shadow-sm">
