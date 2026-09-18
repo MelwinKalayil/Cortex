@@ -198,9 +198,15 @@ import {
   TileLayer,
   useMap,
 } from 'react-leaflet'
-
+import dynamic from 'next/dynamic'
 import 'leaflet/dist/leaflet.css'
 
+const RestrictedZoneLayer = dynamic(
+  () => import('@/components/restricted-zone-map'),
+  {
+    ssr: false,
+  }
+)
 const vitCenter = [12.9692, 79.1560]
 const alerts = [
   {
@@ -286,6 +292,7 @@ export default function CampusAlertMap() {
         />
 
         <MapResize />
+        <RestrictedZoneLayer />
 
         {alerts.map((alert) => (
           <CircleMarker
@@ -396,15 +403,14 @@ export default function CampusAlertMap() {
       </div>
 
       {/* Live Monitoring */}
-      <div className="absolute right-4 top-4 z-[1000] flex items-center gap-2 rounded-full border border-gray-200 bg-white/95 px-3 py-2 text-xs font-medium text-black shadow-lg">
+        {/* Live indicator */}
+<div className="absolute right-4 top-4 z-[1100] flex items-center gap-2 rounded-full border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-black shadow-lg">
 
-        <span className="size-2 rounded-full bg-green-500" />
+  <span className="size-2 rounded-full bg-green-500" />
 
-        <span className="text-black">
-          Live Monitoring
-        </span>
+  Live Monitoring
 
-      </div>
+</div>
 
     </div>
   )

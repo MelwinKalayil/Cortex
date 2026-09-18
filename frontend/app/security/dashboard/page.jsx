@@ -361,7 +361,6 @@ useEffect(() => {
   <div className="p-5">
     <CampusAlertMap />
 
-    <RestrictedZoneMap />
   </div>
 
 </section>

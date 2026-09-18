@@ -119,3 +119,73 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+/* ================================
+   Leaflet Map Controls
+================================ */
+
+.leaflet-control-container .leaflet-top.leaflet-right {
+  top: 65px;
+}
+
+/* Drawing toolbar */
+.leaflet-draw-toolbar a {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+}
+
+.leaflet-draw-toolbar a:hover {
+  background-color: #f3f4f6 !important;
+}
+
+/* Drawing action buttons */
+.leaflet-draw-actions {
+  display: flex !important;
+  gap: 4px;
+  margin-top: 5px !important;
+}
+
+.leaflet-draw-actions li {
+  margin: 0 !important;
+}
+
+.leaflet-draw-actions a {
+  background: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  line-height: normal !important;
+  height: auto !important;
+  width: auto !important;
+  text-decoration: none !important;
+}
+
+.leaflet-draw-actions a:hover {
+  background: #f3f4f6 !important;
+  color: #000000 !important;
+}
+
+/* Delete button */
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove {
+  background-color: #ffffff !important;
+}
+
+.leaflet-draw-toolbar a.leaflet-draw-edit-remove:hover {
+  background-color: #fef2f2 !important;
+}
+
+/* Leaflet zoom controls */
+.leaflet-control-zoom a {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d1d5db !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #f3f4f6 !important;
+}
