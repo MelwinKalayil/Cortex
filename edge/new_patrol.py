@@ -14,7 +14,7 @@ from ultralytics import YOLO
 # ==============================================================================
 BACKEND_WS_URL = "ws://172.18.236.189:8000/ws/alerts"  # Replace localhost with backend IP when networked
 MODEL_PATH = "Final/best.onnx"                         # Path to your ONNX or .pt model
-ALERT_COOLDOWN_SEC = 5                         # Prevent alert spamming
+ALERT_COOLDOWN_SEC = 5                        # Prevent alert spamming
 INPUT_WIDTH = 640
 INPUT_HEIGHT = 640
 
