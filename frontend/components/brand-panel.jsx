@@ -17,11 +17,11 @@ export function BrandPanel() {
         <p className="mt-4 text-lg font-medium text-primary">
           See. Detect. Respond.
         </p>
-        <p className="mt-4 max-w-sm text-pretty text-sm leading-relaxed text-muted-foreground">
+        {/* <p className="mt-4 max-w-sm text-pretty text-sm leading-relaxed text-muted-foreground">
           Edge-AI computer vision turns drone and camera feeds into real-time
           campus safety intelligence — detecting, classifying, and escalating
           events as they happen.
-        </p>
+        </p> */}
       </div>
 
       <div className="relative z-10">
