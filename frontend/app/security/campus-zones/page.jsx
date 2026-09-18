@@ -148,11 +148,11 @@ export default function CampusZonesPage() {
               label="Dashboard"
             />
 
-            <NavItem
+            {/* <NavItem
               href="/security/live-monitor"
               icon={<Video className="size-4" />}
               label="Live Monitor"
-            />
+            /> */}
 
             <NavItem
               href="/security/alerts"
@@ -167,11 +167,11 @@ export default function CampusZonesPage() {
               label="Incidents"
             />
 
-            <NavItem
+            {/* <NavItem
               href="/security/cameras"
               icon={<Camera className="size-4" />}
               label="Cameras"
-            />
+            /> */}
 
             <NavItem
               href="/security/campus-zones"
