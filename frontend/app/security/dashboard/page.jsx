@@ -31,30 +31,69 @@ const CampusAlertMap = dynamic(
     ssr: false,
   }
 )
+
+
+const RestrictedZoneMap = dynamic(
+  () => import('@/components/restricted-zone-map'),
+  {
+    ssr: false,
+  }
+)
+// const alerts = [
+//   {
+//     id: 1,
+//     type: 'Perimeter Breach',
+//     location: 'North Gate',
+//     time: '2 min ago',
+//     severity: 'High',
+//   },
+//   {
+//     id: 2,
+//     type: 'Crowd Detected',
+//     location: 'Central Lawn',
+//     time: '8 min ago',
+//     severity: 'Medium',
+//   },
+//   {
+//     id: 3,
+//     type: 'Vehicle in Restricted Zone',
+//     location: 'Library Road',
+//     time: '14 min ago',
+//     severity: 'Low',
+//   },
+// ]
 const alerts = [
   {
     id: 1,
-    type: 'Perimeter Breach',
+    title: 'Perimeter Breach',
     location: 'North Gate',
-    time: '2 min ago',
+    latitude: 12.9711,
+    longitude: 79.1641,
     severity: 'High',
+    time: '2 min ago',
+    snapshot: '/snapshots/perimeter-breach.jpeg',
   },
   {
     id: 2,
-    type: 'Crowd Detected',
+    title: 'Crowd Detected',
     location: 'Central Lawn',
-    time: '8 min ago',
+    latitude: 12.9698,
+    longitude: 79.1578,
     severity: 'Medium',
+    time: '8 min ago',
+    snapshot: '/snapshots/crowd-detected.jpeg',
   },
   {
     id: 3,
-    type: 'Vehicle in Restricted Zone',
+    title: 'Vehicle in Restricted Zone',
     location: 'Library Road',
-    time: '14 min ago',
+    latitude: 12.9706,
+    longitude: 79.1600,
     severity: 'Low',
+    time: '14 min ago',
+    snapshot: '/snapshots/restricted-vehicle.jpeg',
   },
 ]
-
 const cameras = [
   {
     name: 'North Gate',
@@ -321,6 +360,8 @@ useEffect(() => {
 
   <div className="p-5">
     <CampusAlertMap />
+
+    <RestrictedZoneMap />
   </div>
 
 </section>

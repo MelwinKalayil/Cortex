@@ -202,7 +202,6 @@ import {
 import 'leaflet/dist/leaflet.css'
 
 const vitCenter = [12.9692, 79.1560]
-
 const alerts = [
   {
     id: 1,
@@ -212,6 +211,7 @@ const alerts = [
     longitude: 79.1641,
     severity: 'High',
     time: '2 min ago',
+    snapshot: '/snapshots/perimeter-breach.jpeg',
   },
   {
     id: 2,
@@ -221,6 +221,7 @@ const alerts = [
     longitude: 79.1578,
     severity: 'Medium',
     time: '8 min ago',
+    snapshot: '/snapshots/crowd-detected.jpeg',
   },
   {
     id: 3,
@@ -230,6 +231,27 @@ const alerts = [
     longitude: 79.1600,
     severity: 'Low',
     time: '14 min ago',
+    snapshot: '/snapshots/restricted-vehicle.jpeg',
+  },
+]
+const cameras = [
+  {
+    name: 'North Gate',
+    location: 'Main Entrance',
+    status: 'Live',
+    people: 4,
+  },
+  {
+    name: 'Central Lawn',
+    location: 'Zone B',
+    status: 'Live',
+    people: 9,
+  },
+  {
+    name: 'Library Road',
+    location: 'East Campus',
+    status: 'Live',
+    people: 4,
   },
 ]
 
@@ -285,51 +307,61 @@ export default function CampusAlertMap() {
               fillOpacity: 0.95,
             }}
           >
-            <Popup>
-              <div className="min-w-[190px] text-black">
+<Popup>
+  <div className="w-[240px] text-black">
 
-                <div className="mb-2 flex items-center justify-between gap-3">
+{console.log(alert)}
+    <img
+      src={alert.snapshot}
+      alt={alert.title}
+      className="mb-3 h-[130px] w-full rounded-lg object-cover"
+        onError={(e) => {
+    e.currentTarget.style.display = 'none'
+  }}
+    />
 
-                  <h3 className="font-semibold text-black">
-                    {alert.title}
-                  </h3>
+    <div className="mb-2 flex items-center justify-between gap-3">
 
-                  <span
-                    className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-                      alert.severity === 'High'
-                        ? 'bg-red-100 text-red-700'
-                        : alert.severity === 'Medium'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-blue-100 text-blue-700'
-                    }`}
-                  >
-                    {alert.severity}
-                  </span>
+      <h3 className="font-semibold text-black">
+        {alert.title}
+      </h3>
 
-                </div>
+      <span
+        className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+          alert.severity === 'High'
+            ? 'bg-red-100 text-red-700'
+            : alert.severity === 'Medium'
+              ? 'bg-yellow-100 text-yellow-700'
+              : 'bg-blue-100 text-blue-700'
+        }`}
+      >
+        {alert.severity}
+      </span>
 
-                <p className="text-sm text-black">
-                  {alert.location}
-                </p>
+    </div>
 
-                <p className="mt-1 text-xs text-black">
-                  Detected {alert.time}
-                </p>
+    <p className="text-sm text-black">
+      {alert.location}
+    </p>
 
-                <div className="mt-3 rounded-lg bg-gray-100 p-2">
+    <p className="mt-1 text-xs text-black">
+      Detected {alert.time}
+    </p>
 
-                  <p className="text-[10px] text-black">
-                    Coordinates
-                  </p>
+    <div className="mt-3 rounded-lg bg-gray-100 p-2">
 
-                  <p className="text-xs font-medium text-black">
-                    {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}
-                  </p>
+      <p className="text-[10px] text-gray-600">
+        Coordinates
+      </p>
 
-                </div>
+      <p className="text-xs font-medium text-black">
+        {alert.latitude.toFixed(6)}, {alert.longitude.toFixed(6)}
+      </p>
 
-              </div>
-            </Popup>
+    </div>
+
+  </div>
+</Popup>
           </CircleMarker>
         ))}
 
