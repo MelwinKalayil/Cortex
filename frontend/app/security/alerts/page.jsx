@@ -19,63 +19,11 @@ import {
 
 import { useState } from 'react'
 import Link from 'next/link'
-
-const initialAlerts = [
-  {
-    id: 1,
-    title: 'Perimeter Breach',
-    description: 'Movement detected inside restricted perimeter.',
-    location: 'North Gate',
-    camera: 'Camera 01',
-    time: '2 min ago',
-    severity: 'High',
-    status: 'Active',
-  },
-  {
-    id: 2,
-    title: 'Crowd Detected',
-    description: 'Unusual crowd density detected in monitored area.',
-    location: 'Central Lawn',
-    camera: 'Camera 02',
-    time: '8 min ago',
-    severity: 'Medium',
-    status: 'Active',
-  },
-  {
-    id: 3,
-    title: 'Vehicle in Restricted Zone',
-    description: 'Vehicle detected in a restricted access area.',
-    location: 'Library Road',
-    camera: 'Camera 03',
-    time: '14 min ago',
-    severity: 'Low',
-    status: 'Active',
-  },
-  {
-    id: 4,
-    title: 'Unusual Activity',
-    description: 'Unusual movement pattern detected.',
-    location: 'Hostel Block A',
-    camera: 'Camera 04',
-    time: '21 min ago',
-    severity: 'Medium',
-    status: 'Resolved',
-  },
-  {
-    id: 5,
-    title: 'Restricted Area Entry',
-    description: 'Person detected entering restricted zone.',
-    location: 'Engineering Block',
-    camera: 'Camera 05',
-    time: '32 min ago',
-    severity: 'High',
-    status: 'Resolved',
-  },
-]
+import { useAlerts } from '@/hooks/useAlerts'
 
 export default function AlertsPage() {
   const [mobileMenu, setMobileMenu] = useState(false)
-  const [alerts, setAlerts] = useState(initialAlerts)
+  const { alerts, acknowledgeAlert } = useAlerts()
   const [filter, setFilter] = useState('All')
 
   const filteredAlerts =
@@ -83,22 +31,18 @@ export default function AlertsPage() {
       ? alerts
       : alerts.filter((alert) => alert.severity === filter)
 
-  function acknowledgeAlert(id) {
-    setAlerts((current) =>
-      current.map((alert) =>
-        alert.id === id
-          ? { ...alert, status: 'Resolved' }
-          : alert
-      )
-    )
-  }
-
   const activeCount = alerts.filter(
     (alert) => alert.status === 'Active'
   ).length
 
   const highCount = alerts.filter(
-    (alert) => alert.severity === 'High' && alert.status === 'Active'
+    (alert) =>
+      (alert.severity === 'High' || alert.severity === 'Critical') &&
+      alert.status === 'Active'
+  ).length
+
+  const resolvedCount = alerts.filter(
+    (alert) => alert.status === 'Resolved'
   ).length
 
   return (
@@ -280,7 +224,7 @@ export default function AlertsPage() {
             <StatCard
               icon={<CheckCircle2 className="size-5" />}
               title="Resolved Today"
-              value="12"
+              value={resolvedCount}
               description="Successfully handled"
             />
 
@@ -305,7 +249,7 @@ export default function AlertsPage() {
 
                 <Filter className="size-4 text-muted-foreground" />
 
-                {['All', 'High', 'Medium', 'Low'].map((item) => (
+                {['All', 'Critical', 'High', 'Medium', 'Low'].map((item) => (
                   <button
                     key={item}
                     onClick={() => setFilter(item)}
@@ -325,113 +269,121 @@ export default function AlertsPage() {
 
             <div className="divide-y">
 
-              {filteredAlerts.map((alert) => (
+              {filteredAlerts.length === 0 ? (
+                <div className="p-8 text-center text-sm text-muted-foreground">
+                  No alerts to show.
+                </div>
+              ) : (
+                filteredAlerts.map((alert) => (
 
-                <div
-                  key={alert.id}
-                  className="p-5 transition-colors hover:bg-muted/30"
-                >
+                  <div
+                    key={alert.id}
+                    className="p-5 transition-colors hover:bg-muted/30"
+                  >
 
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
 
-                    {/* Icon */}
-                    <div
-                      className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
-                        alert.status === 'Resolved'
-                          ? 'bg-green-500/10 text-green-600'
-                          : alert.severity === 'High'
-                          ? 'bg-red-500/10 text-red-600'
-                          : alert.severity === 'Medium'
-                          ? 'bg-yellow-500/10 text-yellow-600'
-                          : 'bg-blue-500/10 text-blue-600'
-                      }`}
-                    >
-                      {alert.status === 'Resolved' ? (
-                        <CheckCircle2 className="size-5" />
-                      ) : (
-                        <AlertTriangle className="size-5" />
-                      )}
-                    </div>
+                      {/* Icon */}
+                      <div
+                        className={`flex size-11 shrink-0 items-center justify-center rounded-xl ${
+                          alert.status === 'Resolved'
+                            ? 'bg-green-500/10 text-green-600'
+                            : alert.severity === 'Critical'
+                            ? 'bg-red-700/10 text-red-800'
+                            : alert.severity === 'High'
+                            ? 'bg-red-500/10 text-red-600'
+                            : alert.severity === 'Medium'
+                            ? 'bg-yellow-500/10 text-yellow-600'
+                            : 'bg-blue-500/10 text-blue-600'
+                        }`}
+                      >
+                        {alert.status === 'Resolved' ? (
+                          <CheckCircle2 className="size-5" />
+                        ) : (
+                          <AlertTriangle className="size-5" />
+                        )}
+                      </div>
 
-                    {/* Content */}
-                    <div className="min-w-0 flex-1">
+                      {/* Content */}
+                      <div className="min-w-0 flex-1">
 
-                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
 
-                        <h3 className="font-semibold">
-                          {alert.title}
-                        </h3>
+                          <h3 className="font-semibold">
+                            {alert.title}
+                          </h3>
 
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-semibold ${severityClass(
-                            alert.severity
-                          )}`}
-                        >
-                          {alert.severity}
-                        </span>
+                          <span
+                            className={`rounded-full px-2 py-1 text-[10px] font-semibold ${severityClass(
+                              alert.severity
+                            )}`}
+                          >
+                            {alert.severity}
+                          </span>
 
-                        <span
-                          className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
-                            alert.status === 'Active'
-                              ? 'bg-red-500/10 text-red-600'
-                              : 'bg-green-500/10 text-green-600'
-                          }`}
-                        >
-                          {alert.status}
-                        </span>
+                          <span
+                            className={`rounded-full px-2 py-1 text-[10px] font-semibold ${
+                              alert.status === 'Active'
+                                ? 'bg-red-500/10 text-red-600'
+                                : 'bg-green-500/10 text-green-600'
+                            }`}
+                          >
+                            {alert.status}
+                          </span>
+
+                        </div>
+
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          {alert.description}
+                        </p>
+
+                        <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
+
+                          <span className="flex items-center gap-1">
+                            <MapPin className="size-3" />
+                            {alert.location}
+                          </span>
+
+                          <span className="flex items-center gap-1">
+                            <Camera className="size-3" />
+                            {alert.camera}
+                          </span>
+
+                          <span className="flex items-center gap-1">
+                            <Clock3 className="size-3" />
+                            {alert.time}
+                          </span>
+
+                        </div>
 
                       </div>
 
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {alert.description}
-                      </p>
+                      {/* Actions */}
+                      <div className="flex items-center gap-2">
 
-                      <div className="mt-2 flex flex-wrap gap-4 text-xs text-muted-foreground">
+                        {alert.status === 'Active' && (
+                          <button
+                            onClick={() =>
+                              acknowledgeAlert(alert.id)
+                            }
+                            className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-muted"
+                          >
+                            Acknowledge
+                          </button>
+                        )}
 
-                        <span className="flex items-center gap-1">
-                          <MapPin className="size-3" />
-                          {alert.location}
-                        </span>
-
-                        <span className="flex items-center gap-1">
-                          <Camera className="size-3" />
-                          {alert.camera}
-                        </span>
-
-                        <span className="flex items-center gap-1">
-                          <Clock3 className="size-3" />
-                          {alert.time}
-                        </span>
-
-                      </div>
-
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2">
-
-                      {alert.status === 'Active' && (
-                        <button
-                          onClick={() =>
-                            acknowledgeAlert(alert.id)
-                          }
-                          className="rounded-lg border px-3 py-2 text-xs font-medium hover:bg-muted"
-                        >
-                          Acknowledge
+                        <button className="rounded-lg bg-primary p-2 text-primary-foreground hover:bg-primary/90">
+                          <ChevronRight className="size-4" />
                         </button>
-                      )}
 
-                      <button className="rounded-lg bg-primary p-2 text-primary-foreground hover:bg-primary/90">
-                        <ChevronRight className="size-4" />
-                      </button>
+                      </div>
 
                     </div>
 
                   </div>
 
-                </div>
-
-              ))}
+                ))
+              )}
 
             </div>
 
@@ -512,6 +464,10 @@ function StatCard({
 }
 
 function severityClass(severity) {
+  if (severity === 'Critical') {
+    return 'bg-red-700/10 text-red-800'
+  }
+
   if (severity === 'High') {
     return 'bg-red-500/10 text-red-600'
   }

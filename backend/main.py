@@ -1,4 +1,7 @@
-from fastapi import FastAPI, HTTPException, Depends
+import json
+from typing import List
+
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import pymysql
@@ -32,8 +35,11 @@ def get_db():
     finally:
         conn.close()
 
-# --- Request/response shapes (like manually checking request.json in Flask,
-#     but FastAPI validates this automatically) ---
+
+# ============================================================
+# AUTH (unchanged from what you had)
+# ============================================================
+
 class LoginRequest(BaseModel):
     email: str
     password: str
@@ -45,8 +51,6 @@ class RegisterRequest(BaseModel):
     role: str  # "admin" or "security"
 
 
-# --- LOGIN endpoint ---
-# Flask equivalent: @app.route("/auth/login", methods=["POST"])
 @app.post("/auth/login")
 def login(payload: LoginRequest, db=Depends(get_db)):
     cur = db.cursor()
@@ -80,24 +84,19 @@ def login(payload: LoginRequest, db=Depends(get_db)):
     }
 
 
-# --- REGISTER endpoint (this is your "insert through frontend") ---
-# Flask equivalent: @app.route("/auth/register", methods=["POST"])
 @app.post("/auth/register")
 def register(payload: RegisterRequest, db=Depends(get_db)):
     cur = db.cursor()
 
-    # 1. look up role_id from role name
     cur.execute("SELECT role_id FROM roles WHERE role_name = %s", (payload.role,))
     role = cur.fetchone()
     if not role:
         raise HTTPException(status_code=400, detail="Invalid role")
 
-    # 2. check email isn't already taken
     cur.execute("SELECT user_id FROM users WHERE email = %s", (payload.email,))
     if cur.fetchone():
         raise HTTPException(status_code=400, detail="Email already registered")
 
-    # 3. insert
     hashed = hash_password(payload.password)
     cur.execute(
         "INSERT INTO users (name, email, password_hash, role_id) VALUES (%s, %s, %s, %s)",
@@ -108,7 +107,128 @@ def register(payload: RegisterRequest, db=Depends(get_db)):
     return {"message": "User created successfully"}
 
 
-# --- health check (nice to have while testing) ---
+# ============================================================
+# ZONES
+# ============================================================
+
+class ZoneRequest(BaseModel):
+    name: str
+    coordinates: List[List[float]]   # [[lat, lng], [lat, lng], ...]
+
+
+@app.post("/zones")
+def create_zone(payload: ZoneRequest, db=Depends(get_db)):
+    cur = db.cursor()
+    cur.execute(
+        "INSERT INTO zones (name, coordinates) VALUES (%s, %s)",
+        (payload.name, json.dumps(payload.coordinates)),
+    )
+    db.commit()
+    new_id = cur.lastrowid
+    return {"zone_id": new_id, "name": payload.name, "coordinates": payload.coordinates}
+
+
+@app.get("/zones")
+def get_zones(db=Depends(get_db)):
+    cur = db.cursor()
+    cur.execute("SELECT zone_id, name, coordinates FROM zones ORDER BY created_at DESC")
+    rows = cur.fetchall()
+    for row in rows:
+        row["coordinates"] = json.loads(row["coordinates"])
+    return rows
+
+
+@app.delete("/zones/{zone_id}")
+def delete_zone(zone_id: int, db=Depends(get_db)):
+    cur = db.cursor()
+    cur.execute("DELETE FROM zones WHERE zone_id = %s", (zone_id,))
+    db.commit()
+    return {"message": "Zone deleted"}
+
+
+# ============================================================
+# ALERTS (from Raspberry Pi)
+# ============================================================
+
+connected_clients: List[WebSocket] = []
+
+
+def store_alert(payload: dict, db):
+    cur = db.cursor()
+    lat, lng = payload["details"]["target_coordinates"]
+
+    cur.execute(
+        """
+        INSERT INTO alerts
+        (event_id, event_type, severity, hazard_class, confidence,
+         latitude, longitude, geofence_tag, detected_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """,
+        (
+            payload["event_id"],
+            payload["event_type"],
+            payload["severity"],
+            payload["details"]["hazard_class"],
+            payload["details"].get("confidence"),
+            lat,
+            lng,
+            payload["details"].get("geofence_tag"),
+            payload["timestamp"].replace("Z", ""),
+        ),
+    )
+    db.commit()
+
+
+@app.websocket("/ws/alerts")
+async def alerts_ws(websocket: WebSocket):
+    await websocket.accept()
+    connected_clients.append(websocket)
+    db_gen = get_db()
+    db = next(db_gen)
+    try:
+        while True:
+            data = await websocket.receive_json()   # from the Pi
+            store_alert(data, db)
+            for client in connected_clients:
+                await client.send_json(data)          # broadcast to all (incl. Pi itself, harmless)
+    except WebSocketDisconnect:
+        connected_clients.remove(websocket)
+    finally:
+        db.close()
+
+
+@app.get("/alerts/recent")
+def recent_alerts(db=Depends(get_db)):
+    cur = db.cursor()
+    cur.execute("""
+        SELECT event_id, event_type, severity, hazard_class,
+               latitude, longitude, geofence_tag, detected_at
+        FROM alerts
+        ORDER BY detected_at DESC
+        LIMIT 50
+    """)
+    return cur.fetchall()
+
+
+# Manual test endpoint — lets you POST a fake alert without needing the Pi connected
+class TestAlertRequest(BaseModel):
+    event_id: str
+    timestamp: str
+    event_type: str
+    severity: str
+    details: dict
+
+
+@app.post("/alerts/test")
+def test_alert(payload: TestAlertRequest, db=Depends(get_db)):
+    store_alert(payload.dict(), db)
+    return {"message": "Test alert stored"}
+
+
+# ============================================================
+# HEALTH CHECK
+# ============================================================
+
 @app.get("/")
 def root():
     return {"status": "backend running"}
