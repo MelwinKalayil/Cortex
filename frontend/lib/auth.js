@@ -1,10 +1,4 @@
-// Authentication client for NMSight.
-//
-// For now this is mocked. The eventual backend contract is:
-//   POST /api/auth/login  { email, password }
-//   -> { access_token, user: { id, name, role } }
-// The `role` returned here (never chosen by the user) will decide which
-// dashboard the authenticated account can access.
+const API_URL = 'http://localhost:8000'
 
 /**
  * @typedef {'security' | 'admin'} UserRole
@@ -14,31 +8,56 @@
  */
 
 /**
- * Sign in a campus operator.
- *
- * Replace the mocked body with a real request when the FastAPI backend is
- * ready, e.g.:
- *
- *   const res = await fetch('/api/auth/login', {
- *     method: 'POST',
- *     headers: { 'Content-Type': 'application/json' },
- *     body: JSON.stringify({ email, password }),
- *   })
- *   if (!res.ok) throw new Error('Invalid credentials')
- *   return await res.json()
- *
  * @param {LoginCredentials} credentials
  * @returns {Promise<AuthResponse>}
  */
-export async function login({ email }) {
-  await new Promise((resolve) => setTimeout(resolve, 1200))
+export async function login({ email, password, rememberDevice }) {
+  const res = await fetch(`${API_URL}/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password }),
+  })
 
-  return {
-    access_token: 'mock-access-token',
-    user: {
-      id: 'mock-user',
-      name: email.split('@')[0] || 'Operator',
-      role: 'security',
-    },
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.detail || 'Login failed')
   }
+
+  const data = await res.json()
+  const storage = rememberDevice ? localStorage : sessionStorage
+  storage.setItem('token', data.access_token)
+  storage.setItem('user', JSON.stringify(data.user))
+
+  return data
+}
+
+export async function register({ name, email, password, role }) {
+  const res = await fetch(`${API_URL}/auth/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password, role }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.detail || 'Registration failed')
+  }
+
+  return res.json()
+}
+
+export function getCurrentUser() {
+  const raw = localStorage.getItem('user') || sessionStorage.getItem('user')
+  return raw ? JSON.parse(raw) : null
+}
+
+export function getToken() {
+  return localStorage.getItem('token') || sessionStorage.getItem('token')
+}
+
+export function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('user')
 }

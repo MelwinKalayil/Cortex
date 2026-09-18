@@ -10,7 +10,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <header className="mb-8">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Welcome back
+              Welcome
             </h2>
             <p className="mt-1.5 text-sm text-muted-foreground">
               Sign in to NMSight Campus Operations

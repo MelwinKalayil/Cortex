@@ -75,6 +75,7 @@ export function LoginForm() {
       )
     } finally {
       setIsSubmitting(false)
+      setSignedIn(false)
     }
   }
 
