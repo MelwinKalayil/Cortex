@@ -1,0 +1,29 @@
+description: Ultralytics best model trained on /content/VisDrone2019-DET-4/data.yaml
+author: Ultralytics
+date: '2026-09-18T07:29:38.307837+00:00'
+version: 8.4.155
+license: AGPL-3.0 License (https://ultralytics.com/license)
+docs: https://docs.ultralytics.com
+stride: 32
+task: detect
+head: Detect
+batch: 1
+imgsz:
+- 640
+- 640
+names:
+  0: awning-tricycle
+  1: bicycle
+  2: bus
+  3: car
+  4: motor
+  5: pedestrian
+  6: people
+  7: tricycle
+  8: truck
+  9: van
+args:
+  batch: 1
+  quantize: null
+channels: 3
+end2end: false
