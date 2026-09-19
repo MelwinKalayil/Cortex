@@ -19,11 +19,11 @@ import {
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useAlerts } from '@/hooks/useAlerts'
+import { userAlerts } from '@/hooks/userAlerts'
 
 export default function AlertsPage() {
   const [mobileMenu, setMobileMenu] = useState(false)
-  const { alerts, acknowledgeAlert } = useAlerts()
+  const { alerts, acknowledgeAlert } = userAlerts()
   const [filter, setFilter] = useState('All')
 
   const filteredAlerts =

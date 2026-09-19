@@ -124,7 +124,7 @@ export function userAlerts() {
 
         setAlerts(formattedAlerts)
       } catch (error) {
-        console.error('Failed to load alerts:', error)
+        console.log('Failed to load alerts:', error)
       }
     }
 
